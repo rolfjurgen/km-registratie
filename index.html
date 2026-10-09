@@ -469,6 +469,23 @@ function load() {
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(ritten)); }
 
 // Laad ritten vanuit Supabase
+
+// === HEARTBEAT: houdt Supabase actief (voorkomt pauze na 7 dagen inactiviteit) ===
+async function supabaseHeartbeat() {
+  try {
+    const { error } = await supabase
+      .from('ritten')
+      .select('id', { count: 'exact', head: true });
+    if (!error) console.log('[Heartbeat] Supabase actief:', new Date().toLocaleString('nl-NL'));
+  } catch(e) {
+    console.log('[Heartbeat] Fout:', e.message);
+  }
+}
+// Heartbeat bij opstarten + elke 24 uur
+supabaseHeartbeat();
+setInterval(supabaseHeartbeat, 24 * 60 * 60 * 1000);
+// === EINDE HEARTBEAT ===
+
 async function laadVanSupabase() {
   try {
     // Laad in pagina's van 1000 om alle ritten op te halen
