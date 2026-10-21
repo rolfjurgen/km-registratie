@@ -1,0 +1,17 @@
+name: Supabase Heartbeat
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ra2Fqc3JleHBlbXZjb3N0eWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNzAyNDMsImV4cCI6MjEwNTg0NjI0M30.O1QZkMcpVk5KY--6ooEwh1sSrMqtBJPwQQnzal3Ekm0" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ra2Fqc3JleHBlbXZjb3N0eWZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNzAyNDMsImV4cCI6MjEwNTg0NjI0M30.O1QZkMcpVk5KY--6ooEwh1sSrMqtBJPwQQnzal3Ekm0" \
+            "https://nkkajsrexpemvcostyfm.supabase.co/rest/v1/ritten?limit=1"
