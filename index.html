@@ -776,7 +776,7 @@ function addRit() {
     toast('Rit toegevoegd ✓');
   }
 
-  ritten.sort((a,b) => a.datum.localeCompare(b.datum));
+  ritten.sort((a,b) => a.datum.localeCompare(b.datum) || (a.begin||0)-(b.begin||0));
   save(); updateJaarFilter(); render();
 
   ['inp-van','inp-via','inp-naar','inp-einde','inp-doel','ret-begin','ret-einde','ret-doel'].forEach(id => {
@@ -975,7 +975,7 @@ function saveEdit() {
     begin, einde, km,
     doel:   document.getElementById('edit-doel').value.trim(),
   };
-  ritten.sort((a,b)=>a.datum.localeCompare(b.datum));
+  ritten.sort((a,b)=>a.datum.localeCompare(b.datum) || (a.begin||0)-(b.begin||0));
   // Zoek rit opnieuw op via id (positie kan veranderd zijn na sortering)
   const gewijzigdRit = ritten.find(r=>r.id===gewijzigdId);
   save(); slaOpInSupabase(gewijzigdRit, true); closeModal(); render(); vulLaatsteEindstand(); toast('Rit bijgewerkt ✓');
@@ -1068,7 +1068,7 @@ function importCSV(e) {
       imported++;
     }
 
-    ritten.sort((a,b)=>a.datum.localeCompare(b.datum));
+    ritten.sort((a,b)=>a.datum.localeCompare(b.datum) || (a.begin||0)-(b.begin||0));
     save(); updateJaarFilter(); render();
     toast(`${imported} ritten geïmporteerd${skipped?', '+skipped+' overgeslagen':''} ✓`);
     e.target.value='';
