@@ -473,10 +473,8 @@ function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(ritten)); }
 // === HEARTBEAT: houdt Supabase actief (voorkomt pauze na 7 dagen inactiviteit) ===
 async function supabaseHeartbeat() {
   try {
-    const { error } = await supabase
-      .from('ritten')
-      .select('id', { count: 'exact', head: true });
-    if (!error) console.log('[Heartbeat] Supabase actief:', new Date().toLocaleString('nl-NL'));
+    await sbFetch('GET', 'ritten?select=id&limit=1');
+    console.log('[Heartbeat] Supabase actief:', new Date().toLocaleString('nl-NL'));
   } catch(e) {
     console.log('[Heartbeat] Fout:', e.message);
   }
