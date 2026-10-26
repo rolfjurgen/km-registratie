@@ -452,7 +452,7 @@ async function sbFetch(method, path, body) {
     body: body ? JSON.stringify(body) : undefined
   });
   if (!res.ok) throw new Error(await res.text());
-  if (method === 'DELETE') return null;
+  if (method === 'DELETE' || method === 'PATCH') return null;
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
@@ -524,9 +524,9 @@ async function laadVanSupabase() {
 }
 
 // Sla één rit op in Supabase
-async function slaOpInSupabase(rit) {
+async function slaOpInSupabase(rit, isUpdate=false) {
   try {
-    await sbFetch('POST', 'ritten', [{
+    const payload = {
       id: rit.id,
       datum: rit.datum,
       type: rit.type,
@@ -537,7 +537,13 @@ async function slaOpInSupabase(rit) {
       einde_stand: rit.einde,
       km: rit.km,
       doel: rit.doel
-    }]);
+    };
+    if (isUpdate) {
+      // PATCH: update bestaande rit op id
+      await sbFetch('PATCH', 'ritten?id=eq.' + rit.id, payload);
+    } else {
+      await sbFetch('POST', 'ritten', [payload]);
+    }
   } catch(e) {
     console.warn('Supabase opslaan mislukt:', e.message);
   }
@@ -928,11 +934,11 @@ function verwijderJaar() {
 }
 
 // VERWIJDEREN
-function delRit(id) {
+async function delRit(id) {
   if (!confirm('Weet je zeker dat je deze rit wilt verwijderen?')) return;
-  verwijderUitSupabase(id);
   ritten = ritten.filter(r=>r.id!==id);
   save(); render(); vulLaatsteEindstand(); toast('Rit verwijderd');
+  await verwijderUitSupabase(id);
 }
 
 // BEWERKEN
@@ -961,6 +967,7 @@ function saveEdit() {
   const begin = parseFloat(document.getElementById('edit-begin').value);
   const einde = parseFloat(document.getElementById('edit-einde').value);
   const km = (!isNaN(begin)&&!isNaN(einde)&&einde>begin) ? parseFloat((einde-begin).toFixed(1)) : ritten[idx].km;
+  const gewijzigdId = editingId;
   ritten[idx] = { ...ritten[idx],
     datum:  document.getElementById('edit-datum').value,
     type:   document.getElementById('edit-type').value,
@@ -971,7 +978,9 @@ function saveEdit() {
     doel:   document.getElementById('edit-doel').value.trim(),
   };
   ritten.sort((a,b)=>a.datum.localeCompare(b.datum));
-  save(); slaOpInSupabase(ritten[idx]); closeModal(); render(); vulLaatsteEindstand(); toast('Rit bijgewerkt ✓');
+  // Zoek rit opnieuw op via id (positie kan veranderd zijn na sortering)
+  const gewijzigdRit = ritten.find(r=>r.id===gewijzigdId);
+  save(); slaOpInSupabase(gewijzigdRit, true); closeModal(); render(); vulLaatsteEindstand(); toast('Rit bijgewerkt ✓');
 }
 
 document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
